@@ -1,4 +1,5 @@
 from __future__ import print_function
+import pretty_errors
 import argparse
 import torch
 import torch.nn as nn
@@ -27,7 +28,7 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if config.use_cuda else {}
 torch.manual_seed(config.seed)
 if torch.cuda.is_available() == False:
     config.use_cuda = False
-    print("invalid cuda access") 
+    print("invalid cuda access")
 if config.use_cuda:
     torch.cuda.manual_seed(config.seed)
 
@@ -68,7 +69,7 @@ def read(argv,config):
 
     return train_loader_a, train_loader_b, test_loader_b
     pdb.set_trace()
-    
+
 train_loader_a, train_loader_b, test_loader_b = read(sys.argv,config)
 
 class Net(nn.Module):
@@ -79,7 +80,7 @@ class Net(nn.Module):
         self.conv2_drop = nn.Dropout2d()
         self.fc1 = nn.Linear(320, 50)
         self.fc2 = nn.Linear(50, 10)
-        
+
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
@@ -133,9 +134,8 @@ def test(epoch):
 
 
 for epoch in range(1, config.epochs + 1):
-    train(epoch)    
+    train(epoch)
     test(epoch)
-    
-PATH = 'pytorch_model_usps2mnist'    
-torch.save(model.state_dict(), PATH)
 
+PATH = 'pytorch_model_usps2mnist'
+torch.save(model.state_dict(), PATH)

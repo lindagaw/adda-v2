@@ -4,7 +4,7 @@ import cv2
 import torch
 import os
 import numpy as np
-import cPickle
+import Pickle
 import gzip
 import torch.utils.data as data
 import urllib
@@ -72,4 +72,3 @@ class MNISTSAMPLE(data.Dataset):
             self.test_set_size = labels.shape[0]
         images = images.reshape((images.shape[0], 1, 28, 28))
         return images, labels
-

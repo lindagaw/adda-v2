@@ -1,4 +1,5 @@
 from __future__ import print_function
+import pretty_errors
 import argparse
 import torch
 import torch.nn as nn
@@ -27,7 +28,7 @@ kwargs = {'num_workers': 1, 'pin_memory': True} if config.use_cuda else {}
 torch.manual_seed(config.seed)
 if torch.cuda.is_available() == False:
     config.use_cuda = False
-    print("invalid cuda access") 
+    print("invalid cuda access")
 if config.use_cuda:
     torch.cuda.manual_seed(config.seed)
 
@@ -66,8 +67,8 @@ def read(argv,config):
                                 seed=config.test_data_b_seed)" % config.test_data_b)
     test_loader_b = torch.utils.data.DataLoader(dataset=test_dataset_b, batch_size=config.test_batch_size, shuffle=True)
 
-    return train_loader_a, train_loader_b, test_loader_b, 
-    
+    return train_loader_a, train_loader_b, test_loader_b,
+
 train_loader_a, train_loader_b, test_loader_b = read(sys.argv,config)
 
 class Net(nn.Module):
@@ -78,7 +79,7 @@ class Net(nn.Module):
         self.conv2_drop = nn.Dropout2d()
         self.fc1 = nn.Linear(320, 50)
         self.fc2 = nn.Linear(50, 10)
-        
+
     def forward(self, x):
         x = F.relu(F.max_pool2d(self.conv1(x), 2))
         x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
@@ -92,7 +93,7 @@ class Discrimer(nn.Module):
         super(Discrimer, self).__init__()
         self.fc1 = nn.Linear(50, 512)
         self.fc2 = nn.Linear(512, 2)
-        
+
     def forward(self, x):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
@@ -111,21 +112,21 @@ if config.use_cuda:
 optimizer_d = optim.Adam(critic.parameters(), lr=config.lr)
 optimizer_g = optim.Adam(model.parameters(), lr=config.lr)
 print("load model...")
-PATH = config.pretrained_path #'pytorch_model_usps2mnist'    
+PATH = config.pretrained_path #'pytorch_model_usps2mnist'
 model.load_state_dict(torch.load(PATH)) #model for adapt
 model_src.load_state_dict(torch.load(PATH))
 
 
 def train(epoch):
     model.train()
-    
+
     for batch_idx, ((data_src, target_src), (data, target)) in enumerate(itertools.izip(train_loader_a, train_loader_b)):
         if config.use_cuda:
             data_src, target_src = data_src.cuda(), target_src.cuda()
             data, target = data.cuda(), target.cuda()
         data_src, target_src = Variable(data_src), Variable(target_src)
         data, target = Variable(data), Variable(target)
-       
+
         feat_src, output_src = model_src(data_src)
         feat, output = model(data)
         all_d_feat = torch.cat((feat_src,feat),0)
@@ -142,16 +143,16 @@ def train(epoch):
         model.zero_grad()
         domain_loss.backward(retain_variables=True)
         optimizer_d.step()
-        
+
         #G loss
-        gen_loss = F.nll_loss(all_d_score[all_d_score.size()[0]/2:,...], 
+        gen_loss = F.nll_loss(all_d_score[all_d_score.size()[0]/2:,...],
                    Variable(torch.ones(all_d_score.size()[0]/2).long().cuda()))
-        
+
         model.zero_grad()
         critic.zero_grad()
         gen_loss.backward()
         optimizer_g.step()
-        
+
         if batch_idx % config.log_interval == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tG Loss: {:.6f}\tD Loss: {:.6f}\tD accu: {:.3f}'.format(
                 epoch, batch_idx * len(data), len(train_loader_a.dataset),
@@ -179,7 +180,5 @@ def test(epoch):
 
 
 for epoch in range(1, config.epochs + 1):
-    train(epoch)    
+    train(epoch)
     test(epoch)
-
-
