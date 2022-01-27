@@ -3,7 +3,7 @@ from PIL import Image
 import cv2
 import os
 import numpy as np
-import Pickle
+import pickle
 import gzip
 import torch.utils.data as data
 import torch
@@ -60,7 +60,7 @@ class USPSSAMPLE(data.Dataset):
     def load_samples(self):
         filename = os.path.join(self.root, self.filename)
         f = gzip.open(filename, 'rb')
-        data_set = Pickle.load(f)
+        data_set = pickle.load(f)
         f.close()
         if self.train:
             images = data_set[0][0]

@@ -4,7 +4,7 @@ import cv2
 import torch
 import os
 import numpy as np
-import Pickle
+import pickle
 import gzip
 import torch.utils.data as data
 import urllib
@@ -61,7 +61,7 @@ class MNISTSAMPLE(data.Dataset):
     def load_samples(self):
         filename = os.path.join(self.root, self.filename)
         f = gzip.open(filename, 'rb')
-        train_set, valid_set, test_set = cPickle.load(f)
+        train_set, valid_set, test_set = pickle.load(f)
         f.close()
         if self.train:
             images = np.concatenate((train_set[0], valid_set[0]), axis=0)
